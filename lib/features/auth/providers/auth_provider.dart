@@ -14,7 +14,7 @@ class AuthController extends _$AuthController {
     state = await AsyncValue.guard(() async {
       final authService = ref.read(authServiceProvider);
       await authService.signInWithEmail(email: email, password: password);
-      await ref.read(currentUserProvider.notifier).refresh();
+      ref.invalidate(currentUserProvider);
     });
   }
 
@@ -25,7 +25,7 @@ class AuthController extends _$AuthController {
       await authService.signUpWithEmail(email: email, password: password);
       // Wait a moment for the DB trigger to create the user profile
       await Future.delayed(const Duration(seconds: 1));
-      await ref.read(currentUserProvider.notifier).refresh();
+      ref.invalidate(currentUserProvider);
     });
   }
 
@@ -34,7 +34,7 @@ class AuthController extends _$AuthController {
     state = await AsyncValue.guard(() async {
       final authService = ref.read(authServiceProvider);
       await authService.signOut();
-      await ref.read(currentUserProvider.notifier).refresh();
+      ref.invalidate(currentUserProvider);
     });
   }
 }
