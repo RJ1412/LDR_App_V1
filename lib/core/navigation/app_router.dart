@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../network/supabase_client.dart';
+import '../../features/auth/providers/current_user_provider.dart';
+import '../../features/auth/providers/auth_state_provider.dart';
+import '../../features/auth/providers/current_couple_provider.dart';
+import '../../features/auth/screens/login_screen.dart';
+import '../../features/onboarding/screens/invite_screen.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../../shared/widgets/glass_card.dart';
 
 part 'app_router.g.dart';
 
-// Key router paths
 class AppRoutes {
   AppRoutes._();
   
@@ -25,23 +29,44 @@ class AppRoutes {
 @riverpod
 GoRouter appRouter(AppRouterRef ref) {
   final supabase = ref.watch(supabaseClientProvider);
+  final currentUserAsync = ref.watch(currentUserProvider);
+  final authStateAsync = ref.watch(authStateChangesProvider);
+  final coupleAsync = ref.watch(currentCoupleStreamProvider);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
     redirect: (BuildContext context, GoRouterState state) {
-      final session = supabase.auth.currentSession;
-      final isLoggedIn = session != null;
+      final isLoggedIn = supabase.auth.currentSession != null;
       final isGoingToLogin = state.matchedLocation == AppRoutes.login;
       
-      // 1. If not logged in, redirect to login unless already going there
       if (!isLoggedIn) {
         return isGoingToLogin ? null : AppRoutes.login;
       }
 
-      // 2. If logged in and on login/splash, redirect to check onboarding/pairing state
-      if (isGoingToLogin || state.matchedLocation == AppRoutes.splash) {
-        // User is logged in. In subsequent tickets we will check their database profile.
-        // For now, redirect to dashboard as fallback.
+      // If logged in, wait for profile to load
+      if (currentUserAsync is AsyncLoading) {
+        return AppRoutes.splash;
+      }
+
+      final profile = currentUserAsync.value;
+      final couple = coupleAsync.value;
+      final hasCoupleId = profile?.coupleId != null;
+      final isGoingToInvite = state.matchedLocation == AppRoutes.invite;
+
+      if (!hasCoupleId) {
+        return isGoingToInvite ? null : AppRoutes.invite;
+      }
+
+      // Has couple ID. Check if couple is fully formed.
+      final isCoupleComplete = couple != null && couple.partner1Id != null && couple.partner2Id != null;
+
+      if (!isCoupleComplete) {
+        // Pending partner. Must stay on Invite screen to see the code.
+        return isGoingToInvite ? null : AppRoutes.invite;
+      }
+
+      // Couple is complete
+      if (isGoingToLogin || isGoingToInvite || state.matchedLocation == AppRoutes.splash) {
         return AppRoutes.dashboard;
       }
 
@@ -54,7 +79,7 @@ GoRouter appRouter(AppRouterRef ref) {
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) => const LoginPlaceholderScreen(),
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: AppRoutes.onboarding,
@@ -62,7 +87,7 @@ GoRouter appRouter(AppRouterRef ref) {
       ),
       GoRoute(
         path: AppRoutes.invite,
-        builder: (context, state) => const InvitePlaceholderScreen(),
+        builder: (context, state) => const InviteScreen(),
       ),
       GoRoute(
         path: AppRoutes.dashboard,
@@ -89,20 +114,18 @@ GoRouter appRouter(AppRouterRef ref) {
   );
 }
 
-// --- Temp Placeholder Screens to prevent routing errors in Ticket 1 ---
+// --- Placeholders for remaining screens ---
 
 class PremiumPlaceholderScreen extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
-  final List<Widget>? actions;
 
   const PremiumPlaceholderScreen({
     super.key,
     required this.title,
     required this.subtitle,
     required this.icon,
-    this.actions,
   });
 
   @override
@@ -111,39 +134,26 @@ class PremiumPlaceholderScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // Elegant glow backgrounds
           Positioned(
-            top: -100,
-            right: -100,
+            top: -100, right: -100,
             child: Container(
-              width: 300,
-              height: 300,
+              width: 300, height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.15),
-                    blurRadius: 100,
-                    spreadRadius: 50,
-                  ),
+                  BoxShadow(color: AppColors.primary.withValues(alpha: 0.15), blurRadius: 100, spreadRadius: 50),
                 ],
               ),
             ),
           ),
           Positioned(
-            bottom: -100,
-            left: -100,
+            bottom: -100, left: -100,
             child: Container(
-              width: 300,
-              height: 300,
+              width: 300, height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 boxShadow: [
-                  BoxShadow(
-                    color: AppColors.secondary.withValues(alpha: 0.15),
-                    blurRadius: 100,
-                    spreadRadius: 50,
-                  ),
+                  BoxShadow(color: AppColors.secondary.withValues(alpha: 0.15), blurRadius: 100, spreadRadius: 50),
                 ],
               ),
             ),
@@ -157,41 +167,19 @@ class PremiumPlaceholderScreen extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Icon wrapper with nice outline & glow
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: AppColors.surfaceElevated,
-                          border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            width: 1.5,
-                          ),
+                          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1.5),
                         ),
-                        child: Icon(
-                          icon,
-                          size: 40,
-                          color: AppColors.primary,
-                        ),
+                        child: Icon(icon, size: 40, color: AppColors.primary),
                       ),
                       const SizedBox(height: 24),
-                      Text(
-                        title,
-                        style: AppTypography.h2,
-                        textAlign: TextAlign.center,
-                      ),
+                      Text(title, style: AppTypography.h2, textAlign: TextAlign.center),
                       const SizedBox(height: 12),
-                      Text(
-                        subtitle,
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      if (actions != null && actions!.isNotEmpty) ...[
-                        const SizedBox(height: 24),
-                        ...actions!,
-                      ],
+                      Text(subtitle, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
                     ],
                   ),
                 ),
@@ -212,107 +200,58 @@ class SplashScreen extends StatelessWidget {
     return const Scaffold(
       backgroundColor: AppColors.background,
       body: Center(
-        child: CircularProgressIndicator(
-          color: AppColors.primary,
-        ),
+        child: CircularProgressIndicator(color: AppColors.primary),
       ),
-    );
-  }
-}
-
-class LoginPlaceholderScreen extends StatelessWidget {
-  const LoginPlaceholderScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return PremiumPlaceholderScreen(
-      title: 'Welcome to LDR Sync',
-      subtitle: 'Reconnect daily and nurture your long-distance bond with shared rituals.',
-      icon: Icons.favorite_rounded,
-      actions: [
-        ElevatedButton(
-          onPressed: () {},
-          child: const Text('Get Started'),
-        ),
-      ],
     );
   }
 }
 
 class OnboardingPlaceholderScreen extends StatelessWidget {
   const OnboardingPlaceholderScreen({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    return const PremiumPlaceholderScreen(
-      title: 'Setup Your Ritual',
-      subtitle: 'Configure check-in triggers, choose custom notification hours, and personalize your theme.',
-      icon: Icons.tune_rounded,
-    );
-  }
-}
-
-class InvitePlaceholderScreen extends StatelessWidget {
-  const InvitePlaceholderScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const PremiumPlaceholderScreen(
-      title: 'Connect with Partner',
-      subtitle: 'Share your unique invite code or enter your partner\'s code to sync your daily journeys.',
-      icon: Icons.people_rounded,
-    );
-  }
+  Widget build(BuildContext context) => const PremiumPlaceholderScreen(
+    title: 'Setup Your Ritual',
+    subtitle: 'Configure check-in triggers, choose custom notification hours, and personalize your theme.',
+    icon: Icons.tune_rounded,
+  );
 }
 
 class DashboardPlaceholderScreen extends StatelessWidget {
   const DashboardPlaceholderScreen({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    return const PremiumPlaceholderScreen(
-      title: 'Partner Dashboard',
-      subtitle: 'View real-time connection status, today\'s daily check-in prompt, and streak progress.',
-      icon: Icons.dashboard_rounded,
-    );
-  }
+  Widget build(BuildContext context) => const PremiumPlaceholderScreen(
+    title: 'Partner Dashboard',
+    subtitle: 'View real-time connection status, today\'s daily check-in prompt, and streak progress.',
+    icon: Icons.dashboard_rounded,
+  );
 }
 
 class CheckInPlaceholderScreen extends StatelessWidget {
   const CheckInPlaceholderScreen({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    return const PremiumPlaceholderScreen(
-      title: 'Daily Check-In',
-      subtitle: 'How is your heart feeling today? Rate affection, stress, energy, and log your emotions.',
-      icon: Icons.edit_note_rounded,
-    );
-  }
+  Widget build(BuildContext context) => const PremiumPlaceholderScreen(
+    title: 'Daily Check-In',
+    subtitle: 'How is your heart feeling today? Rate affection, stress, energy, and log your emotions.',
+    icon: Icons.edit_note_rounded,
+  );
 }
 
 class HistoryPlaceholderScreen extends StatelessWidget {
   const HistoryPlaceholderScreen({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    return const PremiumPlaceholderScreen(
-      title: 'Relationship Timeline',
-      subtitle: 'Explore past check-ins, joint mood trends, and monthly AI insights.',
-      icon: Icons.history_rounded,
-    );
-  }
+  Widget build(BuildContext context) => const PremiumPlaceholderScreen(
+    title: 'Relationship Timeline',
+    subtitle: 'Explore past check-ins, joint mood trends, and monthly AI insights.',
+    icon: Icons.history_rounded,
+  );
 }
 
 class SettingsPlaceholderScreen extends StatelessWidget {
   const SettingsPlaceholderScreen({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    return const PremiumPlaceholderScreen(
-      title: 'Account & Settings',
-      subtitle: 'Manage your profile, partner link, daily reminders, and subscription status.',
-      icon: Icons.settings_rounded,
-    );
-  }
+  Widget build(BuildContext context) => const PremiumPlaceholderScreen(
+    title: 'Account & Settings',
+    subtitle: 'Manage your profile, partner link, daily reminders, and subscription status.',
+    icon: Icons.settings_rounded,
+  );
 }

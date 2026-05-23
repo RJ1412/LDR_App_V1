@@ -1,31 +1,27 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'supabase_client.dart';
+part of 'auth_state_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$supabaseClientHash() => r'36e9cae00709545a85bfe4a5a2cb98d8686a01ea';
+String _$authStateChangesHash() => r'bff616c5389cc4f181a74245d287e0ad043e45d7';
 
-/// Exposes the global Supabase client instance.
-///
-/// This client facilitates all auth, database, real-time channels, and edge functions.
-///
-/// Copied from [supabaseClient].
-@ProviderFor(supabaseClient)
-final supabaseClientProvider = AutoDisposeProvider<SupabaseClient>.internal(
-  supabaseClient,
-  name: r'supabaseClientProvider',
+/// See also [authStateChanges].
+@ProviderFor(authStateChanges)
+final authStateChangesProvider = AutoDisposeStreamProvider<AuthState>.internal(
+  authStateChanges,
+  name: r'authStateChangesProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$supabaseClientHash,
+      : _$authStateChangesHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef SupabaseClientRef = AutoDisposeProviderRef<SupabaseClient>;
+typedef AuthStateChangesRef = AutoDisposeStreamProviderRef<AuthState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

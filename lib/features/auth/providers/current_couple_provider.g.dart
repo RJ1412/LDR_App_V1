@@ -1,31 +1,29 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'supabase_client.dart';
+part of 'current_couple_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$supabaseClientHash() => r'36e9cae00709545a85bfe4a5a2cb98d8686a01ea';
+String _$currentCoupleStreamHash() =>
+    r'085309804406399a0cc8e373708025f6d6cc27d9';
 
-/// Exposes the global Supabase client instance.
-///
-/// This client facilitates all auth, database, real-time channels, and edge functions.
-///
-/// Copied from [supabaseClient].
-@ProviderFor(supabaseClient)
-final supabaseClientProvider = AutoDisposeProvider<SupabaseClient>.internal(
-  supabaseClient,
-  name: r'supabaseClientProvider',
+/// See also [currentCoupleStream].
+@ProviderFor(currentCoupleStream)
+final currentCoupleStreamProvider =
+    AutoDisposeStreamProvider<CoupleModel?>.internal(
+  currentCoupleStream,
+  name: r'currentCoupleStreamProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$supabaseClientHash,
+      : _$currentCoupleStreamHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef SupabaseClientRef = AutoDisposeProviderRef<SupabaseClient>;
+typedef CurrentCoupleStreamRef = AutoDisposeStreamProviderRef<CoupleModel?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
