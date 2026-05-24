@@ -50,7 +50,7 @@ class CoupleService {
     // Insert new couple
     final response = await _supabase.from('couples').insert({
       'invite_code': inviteCode,
-      'partner_a_id': user.id,
+      'partner_1_id': user.id,
       'is_active': true,
       'space_name': spaceName,
       'anniversary_date': anniversaryDate?.toIso8601String(),

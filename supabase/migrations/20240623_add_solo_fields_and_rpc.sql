@@ -50,17 +50,17 @@ BEGIN
         RAISE EXCEPTION 'Invalid invite code';
     END IF;
 
-    IF found_couple.partner_b_id IS NOT NULL THEN
+    IF found_couple.partner_2_id IS NOT NULL THEN
         RAISE EXCEPTION 'This couple is already full.';
     END IF;
 
-    IF found_couple.partner_a_id = auth.uid() THEN
+    IF found_couple.partner_1_id = auth.uid() THEN
         RAISE EXCEPTION 'You are already in this couple.';
     END IF;
 
     -- Update the couple
     UPDATE public.couples
-    SET partner_b_id = auth.uid()
+    SET partner_2_id = auth.uid()
     WHERE id = found_couple.id
     RETURNING * INTO found_couple;
 

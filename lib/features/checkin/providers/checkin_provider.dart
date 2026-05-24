@@ -56,7 +56,7 @@ Stream<CheckinModel?> partnerCheckinStream(PartnerCheckinStreamRef ref) async* {
   }
 
   // Find partner's ID
-  final partnerId = profile!.id == couple.partnerAId ? couple.partnerBId : couple.partnerAId;
+  final partnerId = profile!.id == couple.partner1Id ? couple.partner2Id : couple.partner1Id;
   if (partnerId == null) {
     yield null;
     return;

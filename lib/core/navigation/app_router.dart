@@ -77,7 +77,7 @@ GoRouter appRouter(AppRouterRef ref) {
       }
 
       // Has couple ID. Check if couple is fully formed.
-      final isCoupleComplete = couple != null && couple.partnerAId != null && couple.partnerBId != null;
+      final isCoupleComplete = couple != null && couple.partner1Id != null && couple.partner2Id != null;
 
       if (!isCoupleComplete) {
         // Pending partner. Must stay on Invite screen to see the code or go to onboarding to recreate.
