@@ -9,6 +9,8 @@ import '../../features/auth/providers/current_couple_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/onboarding/screens/invite_screen.dart';
 import '../../features/onboarding/screens/solo_onboarding_screen.dart';
+import '../../features/dashboard/screens/dashboard_screen.dart';
+import '../../features/checkin/screens/checkin_screen.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../../shared/widgets/glass_card.dart';
@@ -109,11 +111,11 @@ GoRouter appRouter(AppRouterRef ref) {
       ),
       GoRoute(
         path: AppRoutes.dashboard,
-        builder: (context, state) => const DashboardPlaceholderScreen(),
+        builder: (context, state) => const DashboardScreen(),
       ),
       GoRoute(
         path: AppRoutes.checkin,
-        builder: (context, state) => const CheckInPlaceholderScreen(),
+        builder: (context, state) => const CheckinScreen(),
       ),
       GoRoute(
         path: AppRoutes.history,

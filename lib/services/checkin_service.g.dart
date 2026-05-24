@@ -1,26 +1,27 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'auth_provider.dart';
+part of 'checkin_service.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authControllerHash() => r'483d6060c7d1deb04bd659f5a823313bf37be28e';
+String _$checkinServiceHash() => r'8001ad175da91e94a0c5059eb64ffe449a3636bf';
 
-/// See also [AuthController].
-@ProviderFor(AuthController)
-final authControllerProvider =
-    AutoDisposeAsyncNotifierProvider<AuthController, void>.internal(
-  AuthController.new,
-  name: r'authControllerProvider',
+/// See also [checkinService].
+@ProviderFor(checkinService)
+final checkinServiceProvider = AutoDisposeProvider<CheckinService>.internal(
+  checkinService,
+  name: r'checkinServiceProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$authControllerHash,
+      : _$checkinServiceHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$AuthController = AutoDisposeAsyncNotifier<void>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef CheckinServiceRef = AutoDisposeProviderRef<CheckinService>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

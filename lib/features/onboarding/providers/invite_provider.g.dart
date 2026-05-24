@@ -6,7 +6,7 @@ part of 'invite_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$inviteControllerHash() => r'c61e79d1f72467bc2dff275d6ce73e2035c7151b';
+String _$inviteControllerHash() => r'9524808d2bb27b88e0091014e4e6c4d0fb2d29b9';
 
 /// See also [InviteController].
 @ProviderFor(InviteController)

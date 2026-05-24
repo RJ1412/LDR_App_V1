@@ -98,6 +98,7 @@ create index idx_couples_invite_code on public.couples(invite_code);
 create index idx_couples_partners on public.couples(partner_1_id, partner_2_id);
 create index idx_checkins_couple_created on public.daily_checkins(couple_id, created_at desc);
 create index idx_checkins_user_date on public.daily_checkins(user_id, created_at desc);
+create unique index idx_unique_daily_checkin on public.daily_checkins(user_id, date(timezone('utc'::text, created_at)));
 create index idx_streaks_couple_id on public.streaks(couple_id);
 create index idx_insights_couple_created on public.ai_insights(couple_id, created_at desc);
 
