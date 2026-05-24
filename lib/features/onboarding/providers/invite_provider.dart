@@ -12,12 +12,22 @@ class InviteController extends _$InviteController {
     return null; // Holds the generated couple if user chooses to create
   }
 
-  Future<void> generateInvite() async {
+  Future<void> generateInvite({
+    String? spaceName,
+    DateTime? anniversaryDate,
+    String? welcomeMessage,
+    String? coverPhotoUrl,
+  }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final coupleService = ref.read(coupleServiceProvider);
-      final couple = await coupleService.createCouple();
-      await ref.read(currentUserProvider.notifier).refresh();
+      final couple = await coupleService.createCouple(
+        spaceName: spaceName,
+        anniversaryDate: anniversaryDate,
+        welcomeMessage: welcomeMessage,
+        coverPhotoUrl: coverPhotoUrl,
+      );
+      ref.invalidate(currentUserProvider);
       return couple;
     });
   }
@@ -27,7 +37,7 @@ class InviteController extends _$InviteController {
     state = await AsyncValue.guard(() async {
       final coupleService = ref.read(coupleServiceProvider);
       final couple = await coupleService.joinCouple(inviteCode);
-      await ref.read(currentUserProvider.notifier).refresh();
+      ref.invalidate(currentUserProvider);
       return couple;
     });
   }

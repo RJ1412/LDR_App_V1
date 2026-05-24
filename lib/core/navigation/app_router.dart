@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../network/supabase_client.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/providers/current_user_provider.dart';
 import '../../features/auth/providers/auth_state_provider.dart';
 import '../../features/auth/providers/current_couple_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/onboarding/screens/invite_screen.dart';
+import '../../features/onboarding/screens/solo_onboarding_screen.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../../shared/widgets/glass_card.dart';
@@ -26,15 +28,24 @@ class AppRoutes {
   static const String settings = '/settings';
 }
 
+class RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterNotifier(this._ref) {
+    _ref.listen(authStateChangesProvider, (_, __) => notifyListeners());
+    _ref.listen(currentUserProvider, (_, __) => notifyListeners());
+    _ref.listen(currentCoupleStreamProvider, (_, __) => notifyListeners());
+  }
+}
+
 @riverpod
 GoRouter appRouter(AppRouterRef ref) {
   final supabase = ref.watch(supabaseClientProvider);
-  final currentUserAsync = ref.watch(currentUserProvider);
-  final authStateAsync = ref.watch(authStateChangesProvider);
-  final coupleAsync = ref.watch(currentCoupleStreamProvider);
+  final notifier = RouterNotifier(ref);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
+    refreshListenable: notifier,
     redirect: (BuildContext context, GoRouterState state) {
       final isLoggedIn = supabase.auth.currentSession != null;
       final isGoingToLogin = state.matchedLocation == AppRoutes.login;
@@ -42,6 +53,10 @@ GoRouter appRouter(AppRouterRef ref) {
       if (!isLoggedIn) {
         return isGoingToLogin ? null : AppRoutes.login;
       }
+
+      // Read instead of watch so we don't recreate the GoRouter
+      final currentUserAsync = ref.read(currentUserProvider);
+      final coupleAsync = ref.read(currentCoupleStreamProvider);
 
       // If logged in, wait for profile to load
       if (currentUserAsync is AsyncLoading) {
@@ -52,17 +67,20 @@ GoRouter appRouter(AppRouterRef ref) {
       final couple = coupleAsync.value;
       final hasCoupleId = profile?.coupleId != null;
       final isGoingToInvite = state.matchedLocation == AppRoutes.invite;
+      final isGoingToOnboarding = state.matchedLocation == AppRoutes.onboarding;
 
       if (!hasCoupleId) {
-        return isGoingToInvite ? null : AppRoutes.invite;
+        if (isGoingToInvite || isGoingToOnboarding) return null;
+        return AppRoutes.invite;
       }
 
       // Has couple ID. Check if couple is fully formed.
-      final isCoupleComplete = couple != null && couple.partner1Id != null && couple.partner2Id != null;
+      final isCoupleComplete = couple != null && couple.partnerAId != null && couple.partnerBId != null;
 
       if (!isCoupleComplete) {
-        // Pending partner. Must stay on Invite screen to see the code.
-        return isGoingToInvite ? null : AppRoutes.invite;
+        // Pending partner. Must stay on Invite screen to see the code or go to onboarding to recreate.
+        if (isGoingToInvite || isGoingToOnboarding) return null;
+        return AppRoutes.invite;
       }
 
       // Couple is complete
@@ -83,7 +101,7 @@ GoRouter appRouter(AppRouterRef ref) {
       ),
       GoRoute(
         path: AppRoutes.onboarding,
-        builder: (context, state) => const OnboardingPlaceholderScreen(),
+        builder: (context, state) => const SoloOnboardingScreen(),
       ),
       GoRoute(
         path: AppRoutes.invite,
@@ -164,8 +182,9 @@ class PremiumPlaceholderScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: GlassCard(
                   padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
                         padding: const EdgeInsets.all(16),
@@ -186,10 +205,11 @@ class PremiumPlaceholderScreen extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 }
 
 class SplashScreen extends StatelessWidget {

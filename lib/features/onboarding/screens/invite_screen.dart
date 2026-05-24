@@ -8,6 +8,7 @@ import '../../../shared/widgets/glass_card.dart';
 import '../providers/invite_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/providers/current_couple_provider.dart';
+import 'package:go_router/go_router.dart';
 
 class InviteScreen extends ConsumerStatefulWidget {
   const InviteScreen({super.key});
@@ -171,40 +172,25 @@ class _InviteScreenState extends ConsumerState<InviteScreen> with SingleTickerPr
         ),
         const SizedBox(height: 32),
         
-        if (_isCreating) ...[
-          // Generate code flow
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: inviteState.isLoading ? null : _generateCode,
-              child: inviteState.isLoading
-                  ? const SizedBox(
-                      height: 20, width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary))
-                  : const Text('Generate Invite Code'),
-            ),
+        // Join couple flow
+        CustomTextField(
+          controller: _codeController,
+          labelText: 'Invite Code',
+          hintText: 'Enter partner\'s 8-character code',
+          prefixIcon: Icons.key_rounded,
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: inviteState.isLoading ? null : _joinCouple,
+            child: inviteState.isLoading
+                ? const SizedBox(
+                    height: 20, width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary))
+                : const Text('Join Couple'),
           ),
-        ] else ...[
-          // Join couple flow
-          CustomTextField(
-            controller: _codeController,
-            labelText: 'Invite Code',
-            hintText: 'Enter partner\'s 8-character code',
-            prefixIcon: Icons.key_rounded,
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: inviteState.isLoading ? null : _joinCouple,
-              child: inviteState.isLoading
-                  ? const SizedBox(
-                      height: 20, width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary))
-                  : const Text('Join Couple'),
-            ),
-          ),
-        ],
+        ),
 
         if (inviteState.hasError) ...[
           const SizedBox(height: 16),
@@ -218,13 +204,11 @@ class _InviteScreenState extends ConsumerState<InviteScreen> with SingleTickerPr
         const SizedBox(height: 24),
         TextButton(
           onPressed: () {
-            setState(() {
-              _isCreating = !_isCreating;
-            });
+            context.push('/onboarding');
           },
           style: TextButton.styleFrom(foregroundColor: AppColors.primary),
           child: Text(
-            _isCreating ? 'I have an invite code' : 'I need to generate a code',
+            'I want to create a space',
             style: AppTypography.buttonText,
           ),
         ),
@@ -301,6 +285,17 @@ class _InviteScreenState extends ConsumerState<InviteScreen> with SingleTickerPr
               ],
             );
           },
+        ),
+        const SizedBox(height: 24),
+        TextButton(
+          onPressed: () {
+            context.push('/onboarding');
+          },
+          style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+          child: Text(
+            'Recreate Space (Test)',
+            style: AppTypography.buttonText,
+          ),
         ),
       ],
     );

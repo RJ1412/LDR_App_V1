@@ -1,18 +1,57 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class CoupleModel {
+  final String id;
+  final DateTime createdAt;
+  final String inviteCode;
+  final String? partnerAId;
+  final String? partnerBId;
+  final bool isActive;
+  final String? spaceName;
+  final DateTime? anniversaryDate;
+  final String? welcomeMessage;
+  final String? coverPhotoUrl;
 
-part 'couple_model.freezed.dart';
-part 'couple_model.g.dart';
+  const CoupleModel({
+    required this.id,
+    required this.createdAt,
+    required this.inviteCode,
+    this.partnerAId,
+    this.partnerBId,
+    required this.isActive,
+    this.spaceName,
+    this.anniversaryDate,
+    this.welcomeMessage,
+    this.coverPhotoUrl,
+  });
 
-@freezed
-class CoupleModel with _$CoupleModel {
-  const factory CoupleModel({
-    required String id,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'invite_code') required String inviteCode,
-    @JsonKey(name: 'partner_1_id') String? partner1Id,
-    @JsonKey(name: 'partner_2_id') String? partner2Id,
-    @JsonKey(name: 'is_active') required bool isActive,
-  }) = _CoupleModel;
+  factory CoupleModel.fromJson(Map<String, dynamic> json) {
+    return CoupleModel(
+      id: json['id'] as String,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      inviteCode: json['invite_code'] as String,
+      partnerAId: json['partner_a_id'] as String?,
+      partnerBId: json['partner_b_id'] as String?,
+      isActive: json['is_active'] as bool,
+      spaceName: json['space_name'] as String?,
+      anniversaryDate: json['anniversary_date'] != null 
+          ? DateTime.parse(json['anniversary_date'] as String) 
+          : null,
+      welcomeMessage: json['welcome_message'] as String?,
+      coverPhotoUrl: json['cover_photo_url'] as String?,
+    );
+  }
 
-  factory CoupleModel.fromJson(Map<String, dynamic> json) => _$CoupleModelFromJson(json);
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'created_at': createdAt.toIso8601String(),
+      'invite_code': inviteCode,
+      'partner_a_id': partnerAId,
+      'partner_b_id': partnerBId,
+      'is_active': isActive,
+      'space_name': spaceName,
+      'anniversary_date': anniversaryDate?.toIso8601String(),
+      'welcome_message': welcomeMessage,
+      'cover_photo_url': coverPhotoUrl,
+    };
+  }
 }

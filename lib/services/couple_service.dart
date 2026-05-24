@@ -24,9 +24,25 @@ class CoupleService {
         8, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
   }
 
-  Future<CoupleModel> createCouple() async {
+  Future<CoupleModel> createCouple({
+    String? spaceName,
+    DateTime? anniversaryDate,
+    String? welcomeMessage,
+    String? coverPhotoUrl,
+  }) async {
     final user = _supabase.auth.currentUser;
     if (user == null) throw Exception('Not logged in');
+
+    // For testing: Remove existing space if any, so user can recreate it
+    final userProfile = await getCurrentUserProfile();
+    if (userProfile?.coupleId != null) {
+      try {
+        await _supabase.from('users').update({'couple_id': null}).eq('id', user.id);
+        await _supabase.from('couples').delete().eq('id', userProfile!.coupleId!);
+      } catch (e) {
+        // Ignore deletion errors
+      }
+    }
 
     // Generate unique code (retry if collision occurs)
     String inviteCode = _generateInviteCode();
@@ -34,8 +50,12 @@ class CoupleService {
     // Insert new couple
     final response = await _supabase.from('couples').insert({
       'invite_code': inviteCode,
-      'partner_1_id': user.id,
+      'partner_a_id': user.id,
       'is_active': true,
+      'space_name': spaceName,
+      'anniversary_date': anniversaryDate?.toIso8601String(),
+      'welcome_message': welcomeMessage,
+      'cover_photo_url': coverPhotoUrl,
     }).select().single();
 
     final couple = CoupleModel.fromJson(response);

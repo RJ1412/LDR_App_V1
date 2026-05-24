@@ -12,12 +12,7 @@ class CurrentUser extends _$CurrentUser {
   }
 
   Future<UserModel?> _fetchProfile() async {
-    final coupleService = ref.watch(coupleServiceProvider);
+    final coupleService = ref.read(coupleServiceProvider);
     return await coupleService.getCurrentUserProfile();
-  }
-
-  Future<void> refresh() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _fetchProfile());
   }
 }
